@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plaintext", "Plaintext\Plaintext.csproj", "{A66D35F3-ACAE-4008-97CE-47955CA15B58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessWP", "ProcessWP\ProcessWP.csproj", "{4B94E64C-F7B0-4CB3-9B73-4F8C38A4B777}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NGrams", "NGrams\NGrams.csproj", "{CF910F27-99CD-40CB-BC34-46CE505B60A2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A66D35F3-ACAE-4008-97CE-47955CA15B58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A66D35F3-ACAE-4008-97CE-47955CA15B58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A66D35F3-ACAE-4008-97CE-47955CA15B58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A66D35F3-ACAE-4008-97CE-47955CA15B58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B94E64C-F7B0-4CB3-9B73-4F8C38A4B777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B94E64C-F7B0-4CB3-9B73-4F8C38A4B777}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B94E64C-F7B0-4CB3-9B73-4F8C38A4B777}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B94E64C-F7B0-4CB3-9B73-4F8C38A4B777}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF910F27-99CD-40CB-BC34-46CE505B60A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF910F27-99CD-40CB-BC34-46CE505B60A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF910F27-99CD-40CB-BC34-46CE505B60A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF910F27-99CD-40CB-BC34-46CE505B60A2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
