@@ -38,10 +38,10 @@
                 
                 // internal links: [[Awakenings (book)|Awakenings]], [[Awakenings]]
                 // specifically exclude from this pattern tags that can contain others; eg, [[File:foo.jpg|a photograph of [[Abraham Lincoln]].]]
-                PatternAndReplacement(@"\[\[(?!(?:Category|File):)(?:[^|\[\]]+?\|)?([^\[\]]+?)\]\]", "$1"),
+                PatternAndReplacement(@"\[\[(?!(?:Category|File|Image):)(?:[^|\[\]]+?\|)?([^\[\]]+?)\]\]", "$1"),
 
                 // internal links that we don't want to keep.
-                PatternAndReplacement(@"\[\[(Category|File):[^\[\]]+?\]\]", string.Empty),
+                PatternAndReplacement(@"\[\[(Category|File|Image):[^\[\]]+?\]\]", string.Empty),
 
                 // external links with text: [http://foo "click here for foo"]
                 PatternAndReplacement(@"\[[^\[\]]+(?: ([""']*)([^""\[\]]+)\1)\]", "$2"),

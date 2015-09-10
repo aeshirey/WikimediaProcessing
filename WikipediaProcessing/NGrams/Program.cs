@@ -12,7 +12,7 @@
         private static string outputFile;
         private static int articleLimit;
         private static ushort nGramSize = 1;
-        private static long cutoff = 10L;
+        private static uint cutoff = 10;
 
         private static bool ParseArgs(string[] args)
         {
@@ -57,7 +57,7 @@
                 }
                 else if (args[i].ToLower() == "-cutoff" && i + 1 <= args.Length)
                 {
-                    if (!long.TryParse(args[++i], out cutoff))
+                    if (!uint.TryParse(args[++i], out cutoff))
                     {
                         Console.WriteLine("Invalid cutoff threshold ({0}) specified. Defaulting to 10.");
                     }
@@ -97,11 +97,20 @@
                 articles = articles.Take(articleLimit);
             }
 
-            using (var fh = new StreamWriter(outputFile))
+            if (outputFile.ToLower().EndsWith(".db"))
             {
-                foreach (var kvp in WordFrequency.GetNGramFrequencies(articles, nGramSize, cutoff))
+
+                var freqs = WordFrequency.GetNGramFrequencies(articles, nGramSize, cutoff, outputFile);
+                Console.WriteLine("Processed {0} ngrams to {1}", freqs.Count, outputFile);
+            }
+            else
+            {
+                using (var fh = new StreamWriter(outputFile))
                 {
-                    fh.WriteLine("{0}\t{1}", kvp.Key, kvp.Value);
+                    foreach (var kvp in WordFrequency.GetNGramFrequencies(articles, nGramSize, cutoff))
+                    {
+                        fh.WriteLine("{0}\t{1}", kvp.Key, kvp.Value);
+                    }
                 }
             }
 
