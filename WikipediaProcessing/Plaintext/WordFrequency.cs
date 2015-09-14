@@ -30,10 +30,9 @@
         /// </summary>
         /// <param name="articles">A <see cref="WikipediaArticle"/>. Only the Plaintext property is relevant.</param>
         /// <param name="nGramSize">The size of the n-gram in words. Default is 1.</param>
-        /// <param name="cutoff">The minimum frequency of an n-gram to be returned. Defaults to 10.</param>
         /// <param name="dbFilename">An optional location for the database file, if you want it preserved</param>
         /// <returns>The set of all n-grams from <see cref="articles"/> and their raw frequencies.</returns>
-        public static IList<KeyValuePair<string, uint>> GetNGramFrequencies(IEnumerable<WikipediaArticle> articles, ushort nGramSize = 1, uint cutoff = 10, string dbFilename = null)
+        public static void CalculateNGramFrequencies(IEnumerable<WikipediaArticle> articles, string dbFilename, ushort nGramSize = 1)
         {
             IList<KeyValuePair<string, uint>> ret;
             using (var db = CreateDb(dbFilename))
@@ -83,25 +82,33 @@
                     // handle when we've gone to sleep
                 }
 
-                var x = db.Table<TermFrequency>()
-                    .Where(row => row.Frequency >= cutoff)
-                    .ToList();
-
-                // adding the .Select to the .Table query yields null terms, zero frequencies, so the LINQ is split into two.
-                ret = x
-                    .Select(row => new KeyValuePair<string, uint>(row.Term, row.Frequency))
-                    .OrderByDescending(kvp => kvp.Value)
-                    .ToList();
-
                 db.Close();
             }
-
-            return ret;
         }
 
-        private static SQLiteConnection CreateDb(string dbFile = null)
+        /// <summary>
+        /// Return the n-gram frequencies previously calculated
+        /// </summary>
+        /// <param name="dbFilename">The location of the database file</param>
+        /// <param name="cutoff">The minimum frequency of an n-gram to be returned. Defaults to 10.</param>
+        public static IEnumerable<KeyValuePair<string, uint>> GetNGramFrequencies(string dbFilename, uint cutoff = 10)
         {
-            var conn = new SQLiteConnection(dbFile ?? Path.GetTempFileName());
+            using (var db = CreateDb(dbFilename))
+            {
+                var rows = db.Table<TermFrequency>()
+                    .Where(row => row.Frequency >= cutoff)
+                    .OrderByDescending(row => row.Frequency);
+
+                foreach (var row in rows)
+                {
+                    yield return new KeyValuePair<string, uint>(row.Term, row.Frequency);
+                }
+            }
+        }
+
+        private static SQLiteConnection CreateDb(string dbFile)
+        {
+            var conn = new SQLiteConnection(dbFile);
             conn.CreateTable<TermFrequency>();
             conn.CreateIndex<TermFrequency>(t => t.Term, true);
 

@@ -66,7 +66,6 @@
             using (var fh = File.Create(outputFilename))
             using (var bh = new BinaryWriter(fh))
             {
-                int i = 0;
                 foreach (var article in articles)
                 {
                     bh.Write(article.Title);
@@ -117,8 +116,7 @@
             {
                 if (x.NodeType == XmlNodeType.Element)
                 {
-                    var article = ReadArticle(x);
-                    yield return article;
+                    yield return ReadArticle(x);
                 }
             }
         }

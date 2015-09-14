@@ -6,9 +6,10 @@
     using System.IO;
     using PlaintextWikipedia;
 
-    class Program
+    internal class Program
     {
         private static string inputFile;
+        private static string dbFile;
         private static string outputFile;
         private static int articleLimit;
         private static ushort nGramSize = 1;
@@ -32,13 +33,18 @@
                         && !inputFile.EndsWith(".dat", StringComparison.InvariantCultureIgnoreCase))
                     {
                         Console.WriteLine("ProcessWP currently only handles extracted XML files.");
-                        Console.WriteLine("Download and extract the .xml.bz2 file from https://dumps.wikimedia.org/enwiki/");
+                        Console.WriteLine(
+                            "Download and extract the .xml.bz2 file from https://dumps.wikimedia.org/enwiki/");
                         return false;
                     }
                 }
                 else if (args[i].ToLower() == "-out" && i + 1 <= args.Length)
                 {
                     outputFile = args[++i];
+                }
+                else if (args[i].ToLower() == "-db" && i + 1 <= args.Length)
+                {
+                    dbFile = args[++i];
                 }
                 else if (args[i].ToLower() == "-articles" && i + 1 <= args.Length)
                 {
@@ -68,56 +74,83 @@
                 }
             }
 
-            return !string.IsNullOrEmpty(inputFile) && !string.IsNullOrEmpty(outputFile);
+            return (!string.IsNullOrEmpty(inputFile) || !string.IsNullOrEmpty(dbFile)) && !string.IsNullOrEmpty(outputFile);
         }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             if (!ParseArgs(args))
             {
+                Console.WriteLine("NGrams.exe [-in input.(xml|dat)] [-db frequencies.db] [-out frequencies.txt]");
+                Console.WriteLine("At least two of the input files must be present:");
+                Console.WriteLine("   -in specifies the Wikipedia plaintext dump location");
+                Console.WriteLine("   -db specifies the location of processed n-gram frequencies.");
+                Console.WriteLine("        When used with -in, the input file will be processed into -db");
+                Console.WriteLine("        When used without -in, assume frequencies exist and read from this db");
+                Console.WriteLine("   -out specifies the plaintext TSV that should contain the database dump");
                 return;
             }
 
-            var startTime = DateTime.Now;
-
-            IEnumerable<WikipediaArticle> articles;
-
-            if (inputFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
+            if (string.IsNullOrEmpty(inputFile) && !string.IsNullOrEmpty(dbFile))
             {
-                articles = WikipediaArticle.ReadArticlesFromXmlDump(inputFile)
-                    .Where(article => !article.IsDisambiguation && !article.IsRedirect && !article.IsSpecialPage);
+                // process existing DB into frequency counts
+                DumpFrequenciesToDisk(WordFrequency.GetNGramFrequencies(dbFile, cutoff), outputFile);
             }
             else
             {
-                articles = WikipediaArticle.ReadFromDisk(inputFile);
-            }
+                IEnumerable<WikipediaArticle> articles;
 
-            if (articleLimit > 0)
-            {
-                articles = articles.Take(articleLimit);
-            }
-
-            if (outputFile.ToLower().EndsWith(".db"))
-            {
-
-                var freqs = WordFrequency.GetNGramFrequencies(articles, nGramSize, cutoff, outputFile);
-                Console.WriteLine("Processed {0} ngrams to {1}", freqs.Count, outputFile);
-            }
-            else
-            {
-                using (var fh = new StreamWriter(outputFile))
+                if (inputFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    foreach (var kvp in WordFrequency.GetNGramFrequencies(articles, nGramSize, cutoff))
-                    {
-                        fh.WriteLine("{0}\t{1}", kvp.Key, kvp.Value);
-                    }
+                    articles = WikipediaArticle.ReadArticlesFromXmlDump(inputFile)
+                        .Where(article => !article.IsDisambiguation && !article.IsRedirect && !article.IsSpecialPage);
+                }
+                else
+                {
+                    articles = WikipediaArticle.ReadFromDisk(inputFile);
+                }
+
+                if (articleLimit > 0)
+                {
+                    articles = articles.Take(articleLimit);
+                }
+
+                if (string.IsNullOrEmpty(dbFile))
+                {
+                    // don't care about the db; just use a temp file
+                    dbFile = Path.GetTempFileName();
+                }
+
+                Console.WriteLine("Beginning n-gram calculation");
+                var startTime = DateTime.Now;
+                WordFrequency.CalculateNGramFrequencies(articles, dbFile, nGramSize);
+                var endTime = DateTime.Now;
+
+                Console.WriteLine("Calculation took " + (endTime - startTime));
+
+                if (!string.IsNullOrEmpty(outputFile))
+                {
+                    Console.WriteLine("Writing frequencies to disk");
+
+                    startTime = DateTime.Now;
+                    DumpFrequenciesToDisk(WordFrequency.GetNGramFrequencies(dbFile, cutoff), outputFile);
+                    endTime = DateTime.Now;
+
+                    Console.WriteLine("Dump to disk took " + (endTime - startTime));
                 }
             }
+        }
 
-            var endTime = DateTime.Now;
+        private static void DumpFrequenciesToDisk(IEnumerable<KeyValuePair<string, uint>> frequencies, string filename)
+        {
 
-            TimeSpan processTime = endTime - startTime;
-            Console.WriteLine("Process took " + processTime);
+            using (var fh = new StreamWriter(filename))
+            {
+                foreach (var kvp in frequencies)
+                {
+                    fh.WriteLine("{0}\t{1}", kvp.Key, kvp.Value);
+                }
+            }
         }
     }
 }
