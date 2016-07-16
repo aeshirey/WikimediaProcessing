@@ -1,12 +1,13 @@
-﻿namespace PlaintextWikipedia
-{
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-    using SQLite;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using SQLite;
+using WikimediaProcessing;
 
+namespace NGrams
+{
     public static class WordFrequency
     {
         private const int ArticleBatchSize = 10000;
@@ -32,7 +33,7 @@
         /// <param name="nGramSize">The size of the n-gram in words. Default is 1.</param>
         /// <param name="dbFilename">An optional location for the database file, if you want it preserved</param>
         /// <returns>The set of all n-grams from <see cref="articles"/> and their raw frequencies.</returns>
-        public static void CalculateNGramFrequencies(IEnumerable<WikipediaArticle> articles, string dbFilename, ushort nGramSize = 1)
+        public static void CalculateNGramFrequencies(IEnumerable<WikimediaPage> articles, string dbFilename, ushort nGramSize = 1)
         {
             IList<KeyValuePair<string, uint>> ret;
             using (var db = CreateDb(dbFilename))
@@ -118,29 +119,20 @@
 
         private static void UpdateDb(SQLiteConnection conn, Dictionary<string, uint> counts, Progress progress)
         {
-            var inserts = new List<TermFrequency>();
-            var updates = new List<TermFrequency>();
-
+            conn.BeginTransaction();
             foreach (var kvp in counts)
             {
                 var term = conn.Table<TermFrequency>().Where(row => row.Term == kvp.Key).FirstOrDefault();
-                //var term = conn.Table<TermFrequency>().FirstOrDefault(row => row.Term == kvp.Key);
 
                 if (term == null)
                 {
-                    // insert
-                    inserts.Add(new TermFrequency { Term = kvp.Key, Frequency = kvp.Value });
+                    conn.Insert(new TermFrequency { Term = kvp.Key, Frequency = kvp.Value });
                 }
                 else
                 {
-                    // update
-                    updates.Add(new TermFrequency { Term = kvp.Key, Frequency = kvp.Value + term.Frequency });
+                    conn.Update(new TermFrequency { Term = kvp.Key, Frequency = kvp.Value + term.Frequency });
                 }
             }
-
-            conn.BeginTransaction();
-            conn.InsertAll(inserts);
-            conn.UpdateAll(updates);
 
             conn.Insert(progress);
             conn.Commit();
@@ -151,11 +143,11 @@
         /// <summary>
         /// Given some text, split it on various punctuation that will delineate related text.
         /// </summary>
-        /// <param name="markupRemoved">Plaintext output from <see cref="WikipediaMarkup.RemoveMarkup"/></param>
+        /// <param name="markupRemoved">Plaintext output from <see cref="WikimediaMarkup.RemoveMarkup"/></param>
         /// <returns>An IEnumerable of semi-independent strings of words</returns>
         private static IEnumerable<string> GetSections(string markupRemoved)
         {
-            var pattern = @"[,""\(\).?–;\n\r\t]";
+            const string pattern = @"[,""\(\).?–;\n\r\t]";
 
             return Regex.Split(markupRemoved, pattern, RegexOptions.Multiline | RegexOptions.Singleline)
                 .Select(s => s.Trim())

@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.IO;
-    using PlaintextWikipedia;
+    using WikimediaProcessing;
 
     internal class Program
     {
@@ -70,11 +70,11 @@
                 }
                 else if (args[i].ToLower() == "-removeparens")
                 {
-                    WikipediaMarkup.RemoveParentheticals = true;
+                    WikimediaMarkup.RemoveParentheticals = true;
                 }
             }
 
-            return (!string.IsNullOrEmpty(inputFile) || !string.IsNullOrEmpty(dbFile)) && !string.IsNullOrEmpty(outputFile);
+            return !(string.IsNullOrEmpty(inputFile) && (string.IsNullOrEmpty(dbFile) || string.IsNullOrEmpty(outputFile)));
         }
 
         private static void Main(string[] args)
@@ -98,17 +98,9 @@
             }
             else
             {
-                IEnumerable<WikipediaArticle> articles;
-
-                if (inputFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    articles = WikipediaArticle.ReadArticlesFromXmlDump(inputFile)
+                var wm = new Wikimedia(inputFile);
+                var articles = wm.Articles()
                         .Where(article => !article.IsDisambiguation && !article.IsRedirect && !article.IsSpecialPage);
-                }
-                else
-                {
-                    articles = WikipediaArticle.ReadFromDisk(inputFile);
-                }
 
                 if (articleLimit > 0)
                 {

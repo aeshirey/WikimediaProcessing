@@ -1,10 +1,11 @@
-﻿namespace ProcessWP
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using WikimediaProcessing;
+
+namespace ProcessWP
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using PlaintextWikipedia;
 
     class Program
     {
@@ -67,7 +68,7 @@
                 }
                 else if (args[i].ToLower() == "-removeparens")
                 {
-                    WikipediaMarkup.RemoveParentheticals = true;
+                    WikimediaMarkup.RemoveParentheticals = true;
                 }
                 else if (args[i].ToLower() == "-title" && i + 1 <= args.Length)
                 {
@@ -92,17 +93,10 @@
 
             var startTime = DateTime.Now;
 
-            IEnumerable<WikipediaArticle> articles;
+            var wm = new Wikimedia(inputFile);
 
-            if (inputFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
-            {
-                articles = WikipediaArticle.ReadArticlesFromXmlDump(inputFile)
+            IEnumerable<WikimediaPage> articles = wm.Articles()
                     .Where(article => !article.IsDisambiguation && !article.IsRedirect && !article.IsSpecialPage);
-            }
-            else
-            {
-                articles = WikipediaArticle.ReadFromDisk(inputFile);
-            }
 
             if (!string.IsNullOrEmpty(title))
             {
@@ -125,7 +119,7 @@
                     articles = articles.Take(articleLimit);
                 }
 
-                var numberOfArticles = WikipediaArticle.WriteToDisk(articles, outputFile);
+                var numberOfArticles = Wikimedia.WriteToDisk(articles, outputFile);
                 Console.WriteLine("Wrote {0} articles to disk.", numberOfArticles);
             }
 

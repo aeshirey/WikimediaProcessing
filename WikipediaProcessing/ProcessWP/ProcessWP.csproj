@@ -48,9 +48,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Plaintext\Plaintext.csproj">
+    <ProjectReference Include="..\WikimediaProcessing\WikimediaProcessing.csproj">
       <Project>{a66d35f3-acae-4008-97ce-47955ca15b58}</Project>
-      <Name>Plaintext</Name>
+      <Name>WikimediaProcessing</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

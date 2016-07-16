@@ -1,11 +1,11 @@
-﻿namespace PlaintextWikipedia
+﻿namespace WikimediaProcessing
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
 
-    public static class WikipediaMarkup
+    public static class WikimediaMarkup
     {
         /// <summary>
         /// Specifies whether parenthetical text should be removed when calling <see cref="RemoveMarkup"/>. As this text often contains IPA pronunciation, see-also text, or tangential information,
@@ -18,8 +18,9 @@
         /// </summary>
         public static readonly Regex SpecialPageRegex;
         private static readonly Regex RemoveParensRegex;
+        private static readonly Regex LinkTemplateRegex;
         private static readonly IList<Tuple<Regex, string>> OrderedRegexes;
-        static WikipediaMarkup()
+        static WikimediaMarkup()
         {
             RemoveParensRegex = PatternAndReplacement(@"\([^()]*\)", string.Empty).Item1;
             SpecialPageRegex = PatternAndReplacement(@"^[a-z]+:", string.Empty, RegexOptions.IgnoreCase).Item1;
@@ -28,14 +29,17 @@
             {
                 // <ref>this is a reference</ref>
                 PatternAndReplacement(@"(<ref[^>/]*/>)|(<ref[^>/]*>.*?</ref>)", string.Empty),
-
+                            
+                // link template
+                PatternAndReplacement(@"{{l\|[^\|}]+\|([^}\|]+)(\|[^\|]*)*}}", "$1"),
+                
                 // Curlies, such as {{cite: ...}
                 //PatternAndReplacement(@"{{.*?}}", string.Empty),
                 PatternAndReplacement(@"{{[^{}]*?}}", string.Empty),
 
                 // tables
                 PatternAndReplacement(@"{\|.*?\|}", string.Empty),
-                
+
                 // internal links: [[Awakenings (book)|Awakenings]], [[Awakenings]]
                 // specifically exclude from this pattern tags that can contain others; eg, [[File:foo.jpg|a photograph of [[Abraham Lincoln]].]]
                 PatternAndReplacement(@"\[\[(?!(?:Category|File|Image):)(?:[^|\[\]]+?\|)?([^\[\]]+?)\]\]", "$1"),
@@ -73,6 +77,9 @@
         /// <returns>Plaintext(ish) of the raw article</returns>
         public static string RemoveMarkup(string rawWikipediaText)
         {
+            if (string.IsNullOrWhiteSpace(rawWikipediaText))
+                return string.Empty;
+
             string trimmed = rawWikipediaText;
 
             if (RemoveParentheticals)
