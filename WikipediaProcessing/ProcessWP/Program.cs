@@ -95,7 +95,7 @@ namespace ProcessWP
 
             var wm = new Wikimedia(inputFile);
 
-            IEnumerable<WikimediaPage> articles = wm.Articles()
+            IEnumerable<WikimediaPage> articles = wm.Articles
                     .Where(article => !article.IsDisambiguation && !article.IsRedirect && !article.IsSpecialPage);
 
             if (!string.IsNullOrEmpty(title))

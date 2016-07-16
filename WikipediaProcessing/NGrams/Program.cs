@@ -99,7 +99,7 @@
             else
             {
                 var wm = new Wikimedia(inputFile);
-                var articles = wm.Articles()
+                var articles = wm.Articles
                         .Where(article => !article.IsDisambiguation && !article.IsRedirect && !article.IsSpecialPage);
 
                 if (articleLimit > 0)

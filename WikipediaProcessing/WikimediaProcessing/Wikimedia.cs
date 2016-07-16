@@ -46,30 +46,33 @@ namespace WikimediaProcessing
         /// <summary>
         /// Reads articles one by one from an opened stream. The XML must be directly accessible from this stream
         /// </summary>
-        public IEnumerable<WikimediaPage> Articles()
+        public IEnumerable<WikimediaPage> Articles
         {
-            if (xmlReader != null)
+            get
             {
-                while (xmlReader.ReadToFollowing("page"))
+                if (xmlReader != null)
                 {
-                    if (xmlReader.NodeType == XmlNodeType.Element)
+                    while (xmlReader.ReadToFollowing("page"))
                     {
-                        yield return ReadArticle(xmlReader);
+                        if (xmlReader.NodeType == XmlNodeType.Element)
+                        {
+                            yield return ReadArticle(xmlReader);
+                        }
                     }
                 }
-            }
-            else
-            {
-                using (var bh = new BinaryReader(input, Encoding.UTF8))
+                else
                 {
-                    var jss = new JavaScriptSerializer();
-                    while (input.Position != input.Length)
+                    using (var bh = new BinaryReader(input, Encoding.UTF8))
                     {
-                        var json = bh.ReadString();
+                        var jss = new JavaScriptSerializer();
+                        while (input.Position != input.Length)
+                        {
+                            var json = bh.ReadString();
 
-                        var article = jss.Deserialize<WikimediaPage>(json);
+                            var article = jss.Deserialize<WikimediaPage>(json);
 
-                        yield return article;
+                            yield return article;
+                        }
                     }
                 }
             }

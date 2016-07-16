@@ -19,7 +19,7 @@ namespace Examples
         {
             var wm = new Wikimedia("enwiki-20160701-pages-articles-multistream.xml");
 
-            var articles = wm.Articles()
+            var articles = wm.Articles
                 .Where(article => article.Text.Contains("{{Infobox Motorcycle"));
 
             Wikimedia.WriteToDisk(articles, "motorcycles.dat");
