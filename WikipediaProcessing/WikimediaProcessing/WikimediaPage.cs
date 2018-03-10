@@ -1,12 +1,6 @@
-﻿using ICSharpCode.SharpZipLib.BZip2;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.IO.Compression;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Web.Script.Serialization;
-using System.Xml;
 
 namespace WikimediaProcessing
 {

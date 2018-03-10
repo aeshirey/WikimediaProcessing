@@ -1,19 +1,17 @@
 ﻿using ICSharpCode.SharpZipLib.BZip2;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Web.Script.Serialization;
 using System.Xml;
 
 namespace WikimediaProcessing
 {
     public class Wikimedia
     {
-        private Stream input;
-        private XmlReader xmlReader;
+        private readonly Stream input;
+        private readonly XmlReader xmlReader;
         private readonly XmlReaderSettings settings = new XmlReaderSettings()
         {
             ValidationType = ValidationType.None,
@@ -64,12 +62,11 @@ namespace WikimediaProcessing
                 {
                     using (var bh = new BinaryReader(input, Encoding.UTF8))
                     {
-                        var jss = new JavaScriptSerializer();
                         while (input.Position != input.Length)
                         {
                             var json = bh.ReadString();
 
-                            var article = jss.Deserialize<WikimediaPage>(json);
+                            var article = JsonConvert.DeserializeObject<WikimediaPage>(json);
 
                             yield return article;
                         }
@@ -111,10 +108,9 @@ namespace WikimediaProcessing
             using (var fh = File.Create(outputFilename))
             using (var bh = new BinaryWriter(fh))
             {
-                var jss = new JavaScriptSerializer();
                 foreach (var article in articles)
                 {
-                    var json = jss.Serialize(article);
+                    var json = JsonConvert.SerializeObject(article);
 
                     bh.Write(json);
                     ++numberOfArticles;

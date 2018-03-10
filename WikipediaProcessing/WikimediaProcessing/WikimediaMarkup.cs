@@ -18,7 +18,6 @@
         /// </summary>
         public static readonly Regex SpecialPageRegex;
         private static readonly Regex RemoveParensRegex;
-        private static readonly Regex LinkTemplateRegex;
         private static readonly IList<Tuple<Regex, string>> OrderedRegexes;
         static WikimediaMarkup()
         {
