@@ -85,12 +85,16 @@ namespace WikimediaProcessing
             x.ReadToFollowing("title");
             var title = x.ReadString();
 
+            x.ReadToFollowing("id");
+            var id = x.ReadElementContentAsInt();
+
             x.ReadToFollowing("text");
             var text = x.ReadElementContentAsString();
 
             return new WikimediaPage
             {
                 Title = title,
+                Id = id,
                 Text = text
             };
         }
