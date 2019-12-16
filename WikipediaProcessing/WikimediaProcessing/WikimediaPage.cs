@@ -7,6 +7,11 @@ namespace WikimediaProcessing
     public class WikimediaPage
     {
         /// <summary>
+        /// The Wikipedia article id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
         /// The Wikipedia article title
         /// </summary>
         public string Title;
